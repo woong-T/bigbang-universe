@@ -9,15 +9,19 @@
 
 1. [Godot 4.4 이상](https://godotengine.org/download)을 설치해요. (.NET 버전이 아닌 일반 버전)
 2. Godot에서 **가져오기(Import)** → 이 폴더의 `project.godot`을 골라요.
-3. **F5**(프로젝트 실행)를 누르면 타이틀 화면부터 시작해요.
+3. **F5**(프로젝트 실행)를 누르면 인트로(빅뱅 장면)가 나오고, 이어서 타이틀 화면이 나와요. 인트로는 오른쪽 위 **건너뛰기**나 Esc·스페이스·엔터로 넘길 수 있어요.
 
 프로토타입은 `prototype/index.html`을 브라우저로 열면 바로 해 볼 수 있어요.
 
 ## 지금 들어 있는 것
 
+**인트로**
+
+어둠 → 작은 한 점(특이점) → 점이 뜨거워지며 떨림 → 빅뱅(번쩍, 충격파, 불꽃) → 식어 가는 우주와 별 → 제목. 약 20초이고, 그림 파일 없이 모두 코드로 그려요. 문장과 타이밍은 `scripts/intro.gd` 위쪽 상수에서 고칠 수 있어요.
+
 **코어 루프 (최소 버전)**
 
-타이틀 → 씨앗 고르기 → 시대 선택 → 선택 결과(우주 변화 표시) → (가끔 돌발 사건) → … 12개 시대 … → 결말
+인트로 → 타이틀 → 씨앗 고르기 → 시대 선택 → 선택 결과(우주 변화 표시) → (가끔 돌발 사건) → … 12개 시대 … → 결말
 
 - 선택하면 우주 상태 값이 바뀌고, 결과 화면에서 무엇이 얼마나 바뀌었는지 보여 줘요.
 - 중간에 우주가 끝나 버리는 조건(물질 0, 너무 무거움 등)과 진공 붕괴도 프로토타입과 똑같이 동작해요.
@@ -28,15 +32,18 @@
 
 ```
 project.godot          Godot 프로젝트 설정 (세로 화면 720×1280)
+scenes/intro.tscn      인트로 (게임을 켜면 가장 먼저 나옴)
 scenes/main.tscn       메인 화면
 scripts/
   game_data.gd         data/*.json 을 읽는 전역 저장소 (오토로드 GameData)
   universe.gd          한 판의 우주 상태와 규칙 (효과 적용, 조건 검사, 사건, 결말)
+  intro.gd             인트로 연출 (코드로 그리는 빅뱅 장면과 나레이션)
   main.gd              화면 흐름과 기본 UI
 data/                  게임 내용 (아래 참고)
 tests/
   simulate.tscn        2000판을 자동으로 끝까지 돌려 결말 분포를 출력
   ui_smoke.tscn        메인 화면 버튼을 자동으로 눌러 30판 진행
+  intro_smoke.tscn     인트로를 빨리 감아 끝까지 재생하고, 건너뛰기도 확인
 tools/
   extract_prototype_data.mjs   프로토타입에서 data/*.json 을 다시 뽑는 스크립트
 prototype/index.html   처음 만든 HTML 프로토타입 (수정하지 않음)
@@ -101,6 +108,7 @@ Godot 에디터에서 `tests/simulate.tscn`을 열고 **F6**을 누르거나, �
 ```
 godot --headless --path . res://tests/simulate.tscn
 godot --headless --path . res://tests/ui_smoke.tscn
+godot --headless --path . res://tests/intro_smoke.tscn
 ```
 
 `simulate`는 무작위로 2000판을 돌려 결말별 횟수를 출력해요. 데이터를 고친 뒤 특정 결말이 안 나오게 되었는지 확인할 때 써요.
