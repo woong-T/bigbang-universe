@@ -7,7 +7,7 @@ config_version=5
 
 config/name="빅뱅 유니버스"
 config/description="선택지로 우주를 만들어 보는 빅뱅 게임"
-run/main_scene="res://scenes/main.tscn"
+run/main_scene="res://scenes/intro.tscn"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
