@@ -1,0 +1,45 @@
+[
+  {
+    "key": "D",
+    "name": "밀도",
+    "subtitle": "물질 밀도",
+    "good_min": 38,
+    "good_max": 62
+  },
+  {
+    "key": "F",
+    "name": "밀도 요동",
+    "subtitle": "요동",
+    "good_min": 32,
+    "good_max": 68
+  },
+  {
+    "key": "M",
+    "name": "물질",
+    "subtitle": "물질-반물질",
+    "good_min": 30,
+    "good_max": 70
+  },
+  {
+    "key": "C",
+    "name": "헬륨 비율",
+    "subtitle": "수소·헬륨",
+    "good_min": 32,
+    "good_max": 68
+  },
+  {
+    "key": "DM",
+    "name": "암흑물질",
+    "subtitle": "보이지 않는 물질",
+    "good_min": 25,
+    "good_max": 80
+  },
+  {
+    "key": "LIFE",
+    "name": "무거운 원소",
+    "subtitle": "무거운 원소",
+    "good_min": 50,
+    "good_max": 100,
+    "display_offset": 50
+  }
+]
