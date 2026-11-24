@@ -134,6 +134,11 @@ func show_ending(forced_id: String = "") -> void:
 	for p in u.path:
 		lines.append("[b]%s[/b]  %s" % [p.era, p.text])
 	_text("\n".join(lines), 18, Color(1, 1, 1, 0.75))
+	if not u.sages.is_empty():
+		_heading("이번 판의 학자 카드 %d장" % u.sages.size(), 22)
+		_text("카드를 누르면 학자가 어떤 주장을 했는지 볼 수 있어요.", 16, Color(1, 1, 1, 0.6))
+		for id in u.sages:
+			_sage_card(id)
 	_gauges()
 	_button("다시 만들기 →", func():
 		u = Universe.new()
@@ -243,7 +248,25 @@ func _stop_note() -> void:
 func _sage(c: Dictionary, is_new: bool) -> void:
 	if not c.has("sage"):
 		return
-	var s: Dictionary = GameData.sages.get(c.sage, {})
+	_sage_card(c.sage, "새 학자 카드" if is_new else "학자 카드")
+
+
+## 학자 카드 버튼. 누르면 아래에 그 학자가 어떤 주장을 했는지 펼쳐 보여 준다.
+func _sage_card(id: String, label := "학자 카드") -> void:
+	var s: Dictionary = GameData.sages.get(id, {})
 	if s.is_empty():
 		return
-	_text("[b]%s학자 카드 · %s (%s)[/b]\n%s" % ["새 " if is_new else "", s.name, s.year, s.desc], 18, Color(0.85, 0.8, 1))
+	var b := Button.new()
+	b.text = "%s · %s (%s)\n%s\n눌러서 어떤 주장인지 보기 ▼" % [label, s.name, s.year, s.desc]
+	b.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	b.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	b.custom_minimum_size.y = 72
+	b.add_theme_font_size_override("font_size", 18)
+	b.add_theme_color_override("font_color", Color(0.85, 0.8, 1))
+	_box.add_child(b)
+	_text("[b]이런 주장을 했어요[/b]\n%s\n\n%s\n\n[b]지금은?[/b] %s" % [s.get("claim", ""), s.get("theory", ""), s.get("verdict", "")], 18, Color(0.92, 0.9, 1))
+	var detail: Control = _box.get_child(_box.get_child_count() - 1)
+	detail.visible = false
+	b.pressed.connect(func():
+		detail.visible = not detail.visible
+		b.text = b.text.trim_suffix("▼" if detail.visible else "▲") + ("▲" if detail.visible else "▼"))

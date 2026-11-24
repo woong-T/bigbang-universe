@@ -67,7 +67,7 @@ function choice(c, extra = {}) {
 }
 
 // ---------- 각 데이터 ----------
-const sages = Object.entries(D.SAGES).map(([id, v]) => ({ id, name: v.n, year: v.y, desc: v.d }));
+const sages = Object.entries(D.SAGES).map(([id, v]) => ({ id, name: v.n, year: v.y, desc: v.d, claim: v.c, theory: v.t, verdict: v.v }));
 
 const gauges = D.GAUGES.map(g => {
   const o = { key: g.k, name: g.n, subtitle: g.sub, good_min: g.lo, good_max: g.hi };

@@ -168,39 +168,60 @@ h1,h2,h3{font-family:var(--f-display);font-weight:700;text-wrap:balance;margin:0
 .replay{background:transparent;border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:12.5px;color:var(--ink);white-space:nowrap}
 .replay:hover{border-color:var(--era)}
 
+/* 학자 카드: 누르면 주장 설명 */
+.sage{width:100%;text-align:left;font:inherit;color:inherit;cursor:pointer;transition:border-color .15s,background .15s}
+.sage:hover{background:color-mix(in srgb,var(--era) 15%,transparent);border-style:solid}
+.sage .more{display:block;margin-top:4px;font-family:var(--f-mono);font-size:11.5px;color:var(--era);letter-spacing:.04em}
+.dexgrid button.on{padding:10px 12px;border-radius:10px;font-size:13.5px;min-width:0;text-align:left;border:1px solid color-mix(in srgb,var(--era) 50%,transparent);background:color-mix(in srgb,var(--era) 8%,transparent);line-height:1.5}
+.dexgrid button.on:hover{background:color-mix(in srgb,var(--era) 18%,transparent)}
+.dexgrid button.on small{display:block;font-family:var(--f-mono);font-size:11px;color:var(--faint)}
+.dexhint{margin:-4px 0 10px;font-size:13px;color:var(--faint)}
+dialog.sagebox{max-width:min(560px,calc(100vw - 32px));width:100%;padding:0;border:1px solid color-mix(in srgb,var(--era) 45%,transparent);border-radius:16px;background:#14111e;color:var(--ink)}
+dialog.sagebox::backdrop{background:rgba(5,4,10,.72);backdrop-filter:blur(3px)}
+.sagebox .in{padding:22px 22px 18px;display:flex;flex-direction:column;gap:14px;max-height:calc(100dvh - 64px);overflow:auto}
+.sagebox .hd{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:center}
+.sagebox .av{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:22px;background:var(--era);color:#120f18}
+.sagebox small{display:block;font-family:var(--f-mono);font-size:12px;color:var(--era);letter-spacing:.08em}
+.sagebox h2{font-size:22px}
+.sagebox .claim{margin:0;padding:12px 14px;border-radius:10px;background:color-mix(in srgb,var(--era) 10%,transparent);border-left:3px solid var(--era);font-family:var(--f-display);font-size:17px;line-height:1.5}
+.sagebox .claim b{display:block;font-family:var(--f-mono);font-weight:500;font-size:11.5px;color:var(--era);letter-spacing:.08em;margin-bottom:2px}
+.sagebox p{margin:0;font-size:15.5px;line-height:1.75}
+.sagebox .verdict{align-self:flex-start;font-family:var(--f-mono);font-size:12.5px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.sagebox .close{align-self:flex-end}
 </style>
 
 <canvas id="sky" aria-hidden="true"></canvas>
 <main id="app" aria-live="polite"></main>
+<dialog class="sagebox" id="sagebox" aria-labelledby="sagebox-name"></dialog>
 
 <script>
 (()=>{
 // ---------- 학자 카드 ----------
 const SAGES={
-  penrose:{n:"펜로즈 · 호킹",y:"1965–1970",d:"시간을 거꾸로 돌리면 우주는 한 점(특이점)에서 시작해야 한다는 것을 수학으로 보였어요."},
-  hawking:{n:"스티븐 호킹",y:"1974",d:"블랙홀도 아주 천천히 빛을 내며 증발한다는 '호킹 복사'를 발견했어요."},
-  guth:{n:"앨런 구스",y:"1980",d:"우주가 태어나자마자 순식간에 부풀었다는 '인플레이션' 이론을 처음 제안했어요."},
-  linde:{n:"안드레이 린데",y:"1983–1986",d:"인플레이션이 어딘가에서는 영원히 계속되어 수많은 거품 우주가 생긴다고 했어요."},
-  dicke:{n:"로버트 디키",y:"1969",d:"우주가 지금처럼 평평하려면 처음 밀도가 엄청나게 정확해야 한다는 수수께끼를 지적했어요."},
-  sakharov:{n:"안드레이 사하로프",y:"1967",d:"물질이 반물질보다 조금 더 남으려면 필요한 세 가지 조건을 정리했어요."},
-  higgs:{n:"피터 힉스 외",y:"1964",d:"공간을 채운 장이 알갱이에 질량을 준다고 예측했어요. 48년 뒤 힉스 입자가 발견됐어요."},
-  lhc:{n:"CERN LHC",y:"2012",d:"세계 최대 입자가속기에서 힉스 입자를 찾아냈어요."},
-  zwicky:{n:"츠비키 · 베라 루빈",y:"1933 · 1970년대",d:"은하들이 너무 빨리 도는 것을 보고 '보이지 않는 물질'이 있다고 생각했어요."},
-  gamow:{n:"앨퍼 · 가모프",y:"1948",d:"뜨거운 초기 우주에서 수소와 헬륨이 만들어졌다고 계산하고, 그 빛이 아직 남아 있을 거라 예언했어요."},
-  hoyle:{n:"프레드 호일",y:"1949",d:"'빅뱅'이라는 이름을 붙인 사람이에요. 사실은 빅뱅 이론을 놀리려고 지은 이름이었어요."},
-  penzias:{n:"펜지어스 · 윌슨",y:"1965",d:"안테나의 지워지지 않는 잡음이 빅뱅의 남은 빛이라는 것을 우연히 발견했어요."},
-  friedmann:{n:"알렉산드르 프리드만",y:"1922",d:"아인슈타인의 식에서 우주가 커지거나 줄어들 수 있다는 답을 처음 찾았어요."},
-  eds:{n:"아인슈타인 · 드 지터",y:"1932",d:"우주가 딱 기준 밀도(임계밀도)만큼이라 평평하다는 모형을 함께 내놓았어요."},
-  b2fh:{n:"버비지 부부 · 파울러 · 호일",y:"1957",d:"탄소, 산소, 철 같은 무거운 원소는 별과 초신성이 만든다는 것을 밝혔어요."},
-  lemaitre:{n:"조르주 르메트르",y:"1927 · 1931",d:"우주가 팽창하고 있고, 처음엔 작은 '원시 원자'였다고 처음 주장한 신부이자 과학자예요."},
-  hubble:{n:"에드윈 허블",y:"1929",d:"멀리 있는 은하일수록 더 빨리 멀어진다는 것을 망원경으로 확인했어요."},
-  steady:{n:"호일 · 본디 · 골드",y:"1948",d:"우주는 커지지만 새 물질이 생겨나 늘 같은 모습이라는 '정상우주론'을 주장했어요."},
-  einstein:{n:"알베르트 아인슈타인",y:"1917",d:"우주가 움직이지 않게 하려고 식에 '우주상수 Λ'를 넣었어요."},
-  einstein2:{n:"아인슈타인의 후회",y:"1931",d:"우주가 팽창한다는 관측을 보고 우주상수를 지웠어요. '일생 최대의 실수'라고 했다는 이야기가 전해져요."},
-  sn1998:{n:"펄머터 · 리스 · 슈밋",y:"1998",d:"멀리 있는 초신성을 관측해 우주가 점점 더 빨리 팽창한다는 것을 발견했어요. 2011년 노벨상."},
-  desitter:{n:"빌럼 드 지터",y:"1917",d:"물질 없이 빈 공간의 에너지만 있으면 우주가 무섭게 빨리 커진다는 답을 찾았어요."},
-  caldwell:{n:"로버트 콜드웰",y:"2003",d:"미는 힘이 점점 세지면 언젠가 모든 것이 찢어진다는 '빅 립'을 제안했어요."},
-  planck:{n:"플랑크 위성",y:"2009–2013",d:"우주배경복사를 가장 정밀하게 찍어 우주의 나이를 138억 년으로 쟀어요."},
+  penrose:{n:"펜로즈 · 호킹",y:"1965–1970",d:"시간을 거꾸로 돌리면 우주는 한 점(특이점)에서 시작해야 한다는 것을 수학으로 보였어요.",c:"시간을 거꾸로 돌리면 우주는 한 점에서 시작해야 한다",t:"펜로즈는 무거운 별이 무너져 블랙홀이 되면, 그 한가운데에 밀도가 끝없이 큰 점(특이점)이 반드시 생긴다는 것을 수학으로 증명했어요. 호킹은 이 생각을 우주 전체에 거꾸로 적용했어요. 우주가 지금 커지고 있으니, 시간을 되감으면 모든 것이 한 점으로 모인다는 거예요. 다만 그 점에서는 지금의 물리 법칙이 통하지 않아서, 정말 '점'이었는지는 아직 아무도 몰라요.",v:"수학으로 증명됨 · 그 순간은 아직 수수께끼"},
+  hawking:{n:"스티븐 호킹",y:"1974",d:"블랙홀도 아주 천천히 빛을 내며 증발한다는 '호킹 복사'를 발견했어요.",c:"블랙홀도 빛을 내며 증발한다",t:"블랙홀은 무엇이든 빨아들이고 아무것도 내보내지 않는다고 여겨졌어요. 호킹은 아주 작은 세계의 법칙(양자역학)을 함께 쓰면 블랙홀 가장자리에서 아주 약한 빛이 새어 나온다는 것을 계산했어요. 빛이 나가는 만큼 블랙홀은 조금씩 가벼워지고, 아주 작은 블랙홀은 결국 '펑' 하고 사라져요. 큰 블랙홀은 증발하는 데 우주 나이보다 훨씬 오래 걸려서 아직 직접 보지는 못했어요.",v:"널리 인정받음 · 관측은 아직"},
+  guth:{n:"앨런 구스",y:"1980",d:"우주가 태어나자마자 순식간에 부풀었다는 '인플레이션' 이론을 처음 제안했어요.",c:"태어나자마자 우주가 순식간에 엄청나게 부풀었다",t:"빅뱅 이론에는 풀리지 않던 수수께끼가 있었어요. 한 번도 만난 적 없는 하늘 반대편끼리 온도가 똑같은 이유, 우주가 이상할 만큼 평평한 이유예요. 구스는 탄생 직후 아주 짧은 순간에 우주가 엄청나게 부풀었다면 둘 다 풀린다고 했어요. 아주 작은 한 곳이 부풀어 온 하늘이 됐으니 온도가 같고, 풍선을 크게 불면 표면이 평평해 보이는 것처럼 우주도 평평해진 거예요.",v:"지금 가장 널리 받아들여지는 설명"},
+  linde:{n:"안드레이 린데",y:"1983–1986",d:"인플레이션이 어딘가에서는 영원히 계속되어 수많은 거품 우주가 생긴다고 했어요.",c:"인플레이션은 영원히 계속되며 거품 우주를 끝없이 만든다",t:"린데는 인플레이션이 모든 곳에서 한꺼번에 멈추지 않는다고 생각했어요. 어떤 곳은 멈춰서 우리 우주 같은 '거품'이 되고, 그 바깥은 계속 부풀며 새 거품을 끝없이 만들어요. 그러면 우주는 하나가 아니라 수많은 거품 우주의 바다(다중우주)가 돼요. 다른 거품은 볼 수 없어서 확인할 방법이 없다는 것이 가장 큰 숙제예요.",v:"확인할 방법이 아직 없음"},
+  dicke:{n:"로버트 디키",y:"1969",d:"우주가 지금처럼 평평하려면 처음 밀도가 엄청나게 정확해야 한다는 수수께끼를 지적했어요.",c:"지금처럼 평평하려면 처음 밀도가 소름 돋게 정확해야 한다",t:"우주 밀도가 기준(임계밀도)보다 조금만 크면 금방 다시 쪼그라들고, 조금만 작으면 너무 빨리 흩어져요. 그런데 지금 우주는 기준에 아주 가까워요. 디키가 거꾸로 계산해 보니 탄생 1초 때 밀도가 기준과 거의 털끝만큼도 달라서는 안 됐어요. 연필을 뾰족한 끝으로 세워 수십억 년을 버티게 한 셈이에요. 이 '평탄성 문제'의 답으로 나중에 인플레이션이 나왔어요.",v:"좋은 질문이었음 · 인플레이션이 답으로 나옴"},
+  sakharov:{n:"안드레이 사하로프",y:"1967",d:"물질이 반물질보다 조금 더 남으려면 필요한 세 가지 조건을 정리했어요.",c:"물질이 반물질보다 더 남으려면 세 가지 조건이 필요하다",t:"빅뱅에서는 물질과 반물질이 같은 양으로 생겨서 모두 만나 빛으로 사라져야 할 것 같아요. 그런데 우리는 물질로 된 세상에 살고 있죠. 사하로프는 물질이 조금 더 남으려면 ① 물질의 개수가 바뀔 수 있어야 하고 ② 물질과 반물질이 아주 조금 다르게 행동해야 하고 ③ 우주가 빨리 식어 균형이 깨져야 한다고 정리했어요. 실험에서 흔적은 찾았지만 지금 남은 양을 다 설명하지는 못해요.",v:"조건은 인정 · 정확한 방법은 아직 몰라요"},
+  higgs:{n:"피터 힉스 외",y:"1964",d:"공간을 채운 장이 알갱이에 질량을 준다고 예측했어요. 48년 뒤 힉스 입자가 발견됐어요.",c:"공간을 채운 '힉스 장'이 알갱이에 질량을 준다",t:"힉스와 다른 과학자들은 우주 공간 전체에 보이지 않는 장이 깔려 있다고 했어요. 알갱이가 이 장 속을 지나갈 때 많이 붙잡힐수록 무거워져요. 빛(광자)은 전혀 붙잡히지 않아서 질량이 없어요. 장이 정말 있다면 세게 두드렸을 때 튀어나오는 알갱이(힉스 입자)도 있어야 한다고 예측했어요. 48년 뒤 정말 발견돼 2013년 노벨상을 받았어요.",v:"사실로 확인됨"},
+  lhc:{n:"CERN LHC",y:"2012",d:"세계 최대 입자가속기에서 힉스 입자를 찾아냈어요.",c:"힉스 입자를 찾았고, 우리 진공은 '아슬아슬'할 수도 있다",t:"스위스와 프랑스 땅속에 둘레 27km의 고리 모양 가속기가 있어요. 양성자를 빛에 가까운 속도로 돌려 정면으로 부딪히면 잠깐 동안 빅뱅 직후처럼 뜨거워져요. 2012년 여기서 힉스 입자를 찾았어요. 그 질량으로 계산해 보면 우리 우주의 진공이 가장 깊은 바닥이 아니라 '얕은 골짜기'에 있을 수도 있어요. 다만 굴러떨어지려면 우주 나이보다 훨씬 오래 걸린다고 해요.",v:"발견은 사실 · 진공 이야기는 아직 확실하지 않아요"},
+  zwicky:{n:"츠비키 · 베라 루빈",y:"1933 · 1970년대",d:"은하들이 너무 빨리 도는 것을 보고 '보이지 않는 물질'이 있다고 생각했어요.",c:"눈에 보이지 않는 '암흑물질'이 있다",t:"츠비키는 은하 무리 속 은하들이 너무 빨리 움직이는 것을 보았어요. 보이는 별의 무게만으로는 붙잡아 둘 수 없을 만큼 빨랐죠. 그래서 보이지 않는 물질이 있다고 했어요. 베라 루빈은 은하 가장자리 별들이 중심 쪽 별만큼 빨리 도는 것을 정밀하게 재서, 은하마다 보이지 않는 물질이 감싸고 있다는 것을 보여 줬어요. 보통 물질보다 5배쯤 많지만 정체는 아직 몰라요.",v:"있다는 건 인정 · 정체는 모름"},
+  gamow:{n:"앨퍼 · 가모프",y:"1948",d:"뜨거운 초기 우주에서 수소와 헬륨이 만들어졌다고 계산하고, 그 빛이 아직 남아 있을 거라 예언했어요.",c:"뜨거운 초기 우주가 수소와 헬륨을 만들었고, 그 빛이 아직 남아 있다",t:"앨퍼와 가모프는 초기 우주가 아주 뜨겁고 빽빽했다면 처음 몇 분 동안 거대한 핵융합 공장이 됐을 거라고 계산했어요. 그 결과 우주는 무게로 수소 약 75%, 헬륨 약 25%가 돼요. 또 그때의 뜨거운 빛이 우주가 커지며 식어 지금은 아주 차가운 전파로 하늘에 남아 있을 거라고 예언했어요. 두 예측이 모두 맞아서 빅뱅 이론의 가장 강한 증거가 됐어요.",v:"관측으로 확인됨"},
+  hoyle:{n:"프레드 호일",y:"1949",d:"'빅뱅'이라는 이름을 붙인 사람이에요. 사실은 빅뱅 이론을 놀리려고 지은 이름이었어요.",c:"원소는 빅뱅이 아니라 모두 별 속에서 만들어진다",t:"호일은 우주에 시작이 있다는 생각을 믿지 않았어요. 1949년 라디오 방송에서 그 생각을 '빅뱅(큰 쾅)'이라고 불렀는데, 그 이름이 그대로 굳어졌어요. 호일은 처음 몇 분 동안 원소가 생긴 게 아니라 모든 원소를 별이 만든다고 봤어요. 탄소나 산소 같은 무거운 원소는 호일 말이 맞았지만, 우주의 헬륨 25%는 별만으로는 다 만들 수 없다는 것이 밝혀졌어요.",v:"절반만 맞음 · 헬륨은 빅뱅이 만들었어요"},
+  penzias:{n:"펜지어스 · 윌슨",y:"1965",d:"안테나의 지워지지 않는 잡음이 빅뱅의 남은 빛이라는 것을 우연히 발견했어요.",c:"하늘 전체에서 오는 잡음은 빅뱅의 남은 빛이다",t:"1964년 펜지어스와 윌슨은 나팔 모양 큰 안테나로 전파를 재다가 어느 쪽을 향해도 사라지지 않는 잡음을 들었어요. 안테나에 둥지를 튼 비둘기까지 쫓아내고 청소했지만 잡음은 그대로였어요. 알고 보니 하늘 전체에서 오는 영하 270도쯤의 전파, 바로 가모프 팀이 예언한 빅뱅의 남은 빛(우주배경복사)이었어요. 두 사람은 1978년 노벨상을 받았어요.",v:"관측으로 확인됨"},
+  friedmann:{n:"알렉산드르 프리드만",y:"1922",d:"아인슈타인의 식에서 우주가 커지거나 줄어들 수 있다는 답을 처음 찾았어요.",c:"우주는 가만히 있지 않고 커지거나 줄어들 수 있다",t:"아인슈타인은 우주가 변하지 않는다고 믿었어요. 그런데 프리드만이 아인슈타인의 중력 식을 풀어 보니 우주가 커지거나 줄어드는 답이 자연스럽게 나왔어요. 물질이 많으면 공처럼 닫혀 언젠가 다시 쪼그라들고, 적으면 영원히 커져요. 아인슈타인은 처음엔 계산이 틀렸다고 했다가 나중에 인정했어요. 이 식은 지금도 우주론의 기본 식이에요.",v:"지금도 우주론의 기본"},
+  eds:{n:"아인슈타인 · 드 지터",y:"1932",d:"우주가 딱 기준 밀도(임계밀도)만큼이라 평평하다는 모형을 함께 내놓았어요.",c:"우주는 딱 기준 밀도만큼이라 평평하고, 미는 힘은 없다",t:"아인슈타인과 드 지터는 가장 단순한 우주를 내놓았어요. 미는 힘은 없고, 물질은 딱 임계밀도만큼 있어서 공간이 평평한 우주예요. 이 우주는 영원히 커지지만 중력 때문에 점점 느려져요. 수십 년 동안 기본 모형으로 쓰였는데, 1998년 우주가 오히려 빨라지고 있다는 것이 발견되면서 미는 힘이 다시 더해졌어요.",v:"평평함은 맞음 · '미는 힘 없음'은 틀림"},
+  b2fh:{n:"버비지 부부 · 파울러 · 호일",y:"1957",d:"탄소, 산소, 철 같은 무거운 원소는 별과 초신성이 만든다는 것을 밝혔어요.",c:"탄소, 산소, 철 같은 원소는 별과 초신성이 만든다",t:"네 과학자는 수소와 헬륨보다 무거운 원소가 어디서 왔는지 정리했어요. 별 속에서 헬륨이 합쳐져 탄소와 산소가 되고, 무거운 별 속에서 차례로 더 무거운 원소가 생겨 철까지 만들어져요. 금처럼 더 무거운 원소는 초신성 폭발 같은 엄청난 사건에서 생겨요. 별이 죽으며 뿌린 원소가 모여 행성과 우리 몸이 됐어요. 그래서 '우리는 별의 먼지'라고 해요.",v:"사실로 확인됨"},
+  lemaitre:{n:"조르주 르메트르",y:"1927 · 1931",d:"우주가 팽창하고 있고, 처음엔 작은 '원시 원자'였다고 처음 주장한 신부이자 과학자예요.",c:"우주는 팽창하고 있고, 처음엔 작은 '원시 원자'였다",t:"벨기에의 신부이자 물리학자 르메트르는 1927년, 은하들이 멀어지는 자료와 아인슈타인의 식을 함께 보고 우주가 커지고 있다고 주장했어요. 허블보다 2년 먼저예요. 1931년에는 시간을 거꾸로 돌리면 우주가 아주 작은 '원시 원자'에서 시작했을 거라고 했어요. 이것이 빅뱅 이론의 출발점이에요.",v:"사실로 확인됨"},
+  hubble:{n:"에드윈 허블",y:"1929",d:"멀리 있는 은하일수록 더 빨리 멀어진다는 것을 망원경으로 확인했어요.",c:"멀리 있는 은하일수록 더 빨리 멀어진다",t:"허블은 큰 망원경으로 먼 은하까지의 거리와, 빛이 붉게 늘어난 정도(멀어지는 속도)를 쟀어요. 그랬더니 멀리 있는 은하일수록 더 빨리 멀어지고 있었어요. 우주 전체가 고르게 커지고 있다는 증거예요. 다만 처음 잰 팽창 속도는 약 500으로 지금 값(약 70)보다 7배나 커서, 우주 나이가 지구보다 어리게 나오는 문제가 있었어요. 나중에 거리를 잘못 잰 것이 밝혀져 고쳐졌어요.",v:"팽창 발견은 맞음 · 숫자는 고쳐짐"},
+  steady:{n:"호일 · 본디 · 골드",y:"1948",d:"우주는 커지지만 새 물질이 생겨나 늘 같은 모습이라는 '정상우주론'을 주장했어요.",c:"우주는 커지지만 새 물질이 생겨나 늘 같은 모습이다(정상우주론)",t:"세 과학자는 우주에 시작이 있다는 생각이 마음에 들지 않았어요. 그래서 은하들이 멀어져 생긴 빈 곳에 새 물질이 저절로 조금씩 생겨나, 우주가 언제나 같은 모습이라고 주장했어요. 시작도 끝도 없는 우주예요. 하지만 빅뱅의 남은 빛이 발견되고, 먼 옛날 우주가 지금과 다르게 생겼다는 관측이 쌓이면서 지금은 받아들여지지 않아요.",v:"틀린 것으로 밝혀짐"},
+  einstein:{n:"알베르트 아인슈타인",y:"1917",d:"우주가 움직이지 않게 하려고 식에 '우주상수 Λ'를 넣었어요.",c:"우주는 변하지 않는다. 그러니 밀어내는 힘 Λ가 필요하다",t:"아인슈타인이 자신의 중력 식을 우주 전체에 적용하니, 중력은 끌어당기기만 해서 우주가 무너져야 했어요. 당시엔 모두 우주가 변하지 않는다고 믿었기 때문에, 빈 공간이 밀어내는 힘인 '우주상수 Λ(람다)'를 식에 넣어 중력과 딱 맞서게 했어요. 하지만 이 균형은 연필을 끝으로 세운 것처럼 조금만 흔들려도 무너져요.",v:"멈춘 우주는 틀림 · Λ는 나중에 다시 돌아옴"},
+  einstein2:{n:"아인슈타인의 후회",y:"1931",d:"우주가 팽창한다는 관측을 보고 우주상수를 지웠어요. '일생 최대의 실수'라고 했다는 이야기가 전해져요.",c:"우주가 팽창하니 우주상수는 필요 없다",t:"허블의 관측으로 우주가 팽창한다는 것이 알려지자, 아인슈타인은 우주를 멈춰 세울 필요가 없어졌어요. 그래서 1931년 식에서 우주상수를 지웠어요. 나중에 '내 일생 최대의 실수'라고 했다는 이야기가 전해져요. 그런데 반전이 있어요. 1998년 우주가 점점 빨리 커진다는 것이 발견되면서 우주상수가 '암흑에너지'라는 이름으로 다시 돌아왔어요.",v:"지운 우주상수가 다시 돌아왔어요"},
+  sn1998:{n:"펄머터 · 리스 · 슈밋",y:"1998",d:"멀리 있는 초신성을 관측해 우주가 점점 더 빨리 팽창한다는 것을 발견했어요. 2011년 노벨상.",c:"우주는 점점 더 빨리 팽창하고 있다",t:"두 연구팀은 아주 먼 곳의 초신성을 찾았어요. 이 초신성은 터질 때 밝기가 거의 같아서, 얼마나 어둡게 보이는지로 거리를 잴 수 있어요. 팽창이 느려지고 있을 거라 예상했는데, 먼 초신성이 생각보다 더 어두웠어요. 더 멀리 있다는 뜻, 즉 우주가 약 50억 년 전부터 점점 빨리 커지고 있다는 뜻이에요. 이 미는 힘을 '암흑에너지'라 부르고, 우주의 약 70%를 차지해요.",v:"관측으로 확인됨 · 정체는 모름"},
+  desitter:{n:"빌럼 드 지터",y:"1917",d:"물질 없이 빈 공간의 에너지만 있으면 우주가 무섭게 빨리 커진다는 답을 찾았어요.",c:"물질 없이 빈 공간의 에너지만 있으면 우주는 무섭게 빨리 커진다",t:"드 지터는 아인슈타인의 식에 물질은 하나도 없고 빈 공간의 미는 힘만 있는 우주를 풀어 보았어요. 그랬더니 우주가 멈추기는커녕 점점 더 빠르게 끝없이 불어났어요. 처음엔 수학 장난감처럼 보였지만, 지금은 인플레이션 때의 우주와 아주 먼 미래의 우리 우주가 이런 모습일 거라고 생각해요. 다만 처음부터 이렇게 세게 밀면 은하가 생길 틈이 없어요.",v:"모형은 지금도 쓰임"},
+  caldwell:{n:"로버트 콜드웰",y:"2003",d:"미는 힘이 점점 세지면 언젠가 모든 것이 찢어진다는 '빅 립'을 제안했어요.",c:"미는 힘이 점점 세지면 언젠가 모든 것이 찢어진다(빅 립)",t:"암흑에너지는 정체를 몰라서 세기가 늘 같은지 아무도 확신하지 못해요. 콜드웰은 암흑에너지가 시간이 갈수록 점점 세진다면 어떻게 될지 계산했어요. 먼저 은하 무리가, 다음엔 은하와 태양계가, 마지막엔 별과 행성, 원자까지 찢어진다는 거예요. 지금 관측으로는 암흑에너지가 거의 일정해 보여서 가능성은 낮지만, 완전히 지울 수는 없어요.",v:"가능성 낮음 · 아직 열려 있음"},
+  planck:{n:"플랑크 위성",y:"2009–2013",d:"우주배경복사를 가장 정밀하게 찍어 우주의 나이를 138억 년으로 쟀어요.",c:"우주는 138억 살이고, 보통 물질은 5%뿐이다",t:"플랑크 위성은 하늘 전체의 우주배경복사를 아주 정밀하게 찍었어요. 하늘 온도는 어디나 거의 같지만 10만분의 1 정도의 작은 얼룩이 있어요. 이 얼룩이 나중에 은하가 생길 씨앗이에요. 얼룩의 크기와 모양을 분석해서 우주 나이 138억 년, 보통 물질 5%, 암흑물질 27%, 암흑에너지 68%라는 '우주 조리법'을 알아냈어요.",v:"관측으로 확인됨"},
 };
 const SAGE_IDS=Object.keys(SAGES);
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -633,7 +654,20 @@ function chipsHTML(before){
   if(st.s.L!==before.L)out.push(`<span class="dchip">암흑에너지 ${st.s.L>=75?"아주 셈":st.s.L>=55?"약함":st.s.L>=40?"정지":"없음"}</span>`);
   return out.length?`<div class="dchips">${out.join("")}</div>`:`<p class="meta">수치 변화는 없어요.</p>`;
 }
-function sageHTML(id,isNew){const sg=SAGES[id];return `<div class="sage"><div class="av">${esc(sg.n[0])}</div><div><small>${isNew?"새 학자 카드!":"학자 카드"}</small><b>${esc(sg.n)}</b> <span>${esc(sg.y)} · ${esc(sg.d)}</span></div></div>`}
+function sageHTML(id,isNew){const sg=SAGES[id];return `<button type="button" class="sage" data-sage="${id}" aria-haspopup="dialog"><div class="av">${esc(sg.n[0])}</div><div><small>${isNew?"새 학자 카드!":"학자 카드"}</small><b>${esc(sg.n)}</b> <span>${esc(sg.y)} · ${esc(sg.d)}</span><span class="more">눌러서 어떤 주장인지 보기 →</span></div></button>`}
+function sageChip(id){const sg=SAGES[id];return `<button type="button" class="on" data-sage="${id}" aria-haspopup="dialog"><small>${esc(sg.y)}</small>${esc(sg.n)}</button>`}
+function openSage(id){const sg=SAGES[id],box=document.getElementById("sagebox");if(!sg||!box)return;
+  box.innerHTML=`<div class="in"><div class="hd"><div class="av">${esc(sg.n[0])}</div><div><small>학자 카드 · ${esc(sg.y)}</small><h2 id="sagebox-name">${esc(sg.n)}</h2></div></div>
+    <p class="claim"><b>이런 주장을 했어요</b>${esc(sg.c)}</p>
+    <p>${esc(sg.t)}</p>
+    <span class="verdict">지금은? ${esc(sg.v)}</span>
+    <button type="button" class="btn close">닫기</button></div>`;
+  box.querySelector(".close").onclick=()=>box.close();
+  if(box.showModal)box.showModal();else box.setAttribute("open","");
+  box.querySelector(".close").focus({preventScroll:true});
+}
+document.getElementById("sagebox").addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.close()});
+document.getElementById("app").addEventListener("click",e=>{const b=e.target.closest("[data-sage]");if(b)openSage(b.dataset.sage)});
 function gainSage(id){let isNew=false;if(!st.sages.includes(id))st.sages.push(id);if(!dex.sage.includes(id)){dex.sage.push(id);isNew=true;saveDex(dex)}return isNew}
 function tl(){return `<div class="tl">${STAGES.map((_,k)=>`<i class="${k<st.i?"done":k===st.i?"now":""}"></i>`).join("")}</div>
   <div class="hud"><p class="eyebrow">${st.i+1} / ${STAGES.length} · ${esc(stageView(st.i).time)}</p><p class="meta">학자 카드 <b>${st.sages.length}</b> · 사건 <b>${st.evUsed.length}</b></p></div>`}
@@ -833,8 +867,8 @@ function renderEnd(){
     <div class="panel"><h3>이 우주의 연대기</h3>
       <ol class="path"><li><b>씨앗</b><span>${esc(st.seed||"")}</span></li>${st.path.map(p=>`<li class="${p.era==="사건"?"evt":""}"><b>${esc(p.era)}</b><span>${esc(p.t)}</span></li>`).join("")}</ol>
     </div>
-    <div class="panel"><h3>이번 판의 학자 카드 ${st.sages.length}장</h3>
-      <div class="dexgrid">${st.sages.map(id=>`<div class="on"><small>${SAGES[id].y}</small>${esc(SAGES[id].n)}</div>`).join("")||`<div class="off">이번에는 학자 카드를 모으지 못했어요.</div>`}</div>
+    <div class="panel"><h3>이번 판의 학자 카드 ${st.sages.length}장</h3>${st.sages.length?`<p class="dexhint">카드를 누르면 학자가 어떤 주장을 했는지 볼 수 있어요.</p>`:""}
+      <div class="dexgrid">${st.sages.map(sageChip).join("")||`<div class="off">이번에는 학자 카드를 모으지 못했어요.</div>`}</div>
     </div>
     <div class="row"><button class="btn" id="again">새 우주 만들기</button><button class="ghost" id="dexb">도감 · 발견 ${dex.end.length}/${ENDINGS.length}</button></div>
   </section>`;
@@ -847,8 +881,8 @@ function renderDex(){
     <p class="eyebrow">도감</p><h1>발견한 우주들</h1>
     <div class="panel"><h3>우주 ${dex.end.length} / ${ENDINGS.length}</h3>
       <div class="dexgrid">${ENDINGS.map(e=>dex.end.includes(e.id)?`<div class="on"><small>${esc(e.fate||"미지")}</small>${esc(e.name)}</div>`:`<div class="off"><small>???</small>아직 못 만든 우주</div>`).join("")}</div></div>
-    <div class="panel"><h3>학자 카드 ${dex.sage.length} / ${SAGE_IDS.length}</h3>
-      <div class="dexgrid">${SAGE_IDS.map(id=>dex.sage.includes(id)?`<div class="on"><small>${SAGES[id].y}</small>${esc(SAGES[id].n)}</div>`:`<div class="off"><small>????</small>아직 못 만남</div>`).join("")}</div></div>
+    <div class="panel"><h3>학자 카드 ${dex.sage.length} / ${SAGE_IDS.length}</h3>${dex.sage.length?`<p class="dexhint">모은 카드를 누르면 학자가 어떤 주장을 했는지 볼 수 있어요.</p>`:""}
+      <div class="dexgrid">${SAGE_IDS.map(id=>dex.sage.includes(id)?sageChip(id):`<div class="off"><small>????</small>아직 못 만남</div>`).join("")}</div></div>
     <div class="panel"><h3>돌발 사건 ${dex.ev.length} / ${EVENTS.length}</h3>
       <div class="dexgrid">${EVENTS.map(e=>dex.ev.includes(e.id)?`<div class="on">${esc(e.title)}</div>`:`<div class="off">???</div>`).join("")}</div></div>
     <div class="row"><button class="btn" id="back">처음으로</button></div>
