@@ -5,7 +5,7 @@ extends RefCounted
 ##
 ## 상태 값(state): D 밀도, F 밀도 요동, M 물질, C 헬륨 비율, DM 암흑물질,
 ##                L 암흑에너지(미는 힘), LIFE 무거운 원소, age 우주 나이(10억 년)
-## 플래그(flags): noinf, multi, anti, meta, vac, hot, bhfirst, steady, stat ...
+## 플래그(flags): noinf, lowinf, multi, other, weak, anti, meta, vac, hhiggs, hot, open, small, bhfirst, steady, stat ...
 
 var state: Dictionary = {}
 var flags: Dictionary = {}
@@ -88,7 +88,7 @@ func clamp_state(keys: Array) -> void:
 # ---------- 조건 ----------
 
 ## JSON 조건식을 검사한다. null 은 항상 참.
-## {all:[...]}, {any:[...]}, {flag:"x"}, {not_sage:"id"}, {key:"D", op:">=", value:50}
+## {all:[...]}, {any:[...]}, {flag:"x"}, {not_flag:"x"}, {not_sage:"id"}, {key:"D", op:">=", value:50}
 func check(cond: Variant) -> bool:
 	if cond == null:
 		return true
@@ -105,6 +105,8 @@ func check(cond: Variant) -> bool:
 		return false
 	if c.has("flag"):
 		return flags.get(c.flag, false)
+	if c.has("not_flag"):
+		return not flags.get(c.not_flag, false)
 	if c.has("not_sage"):
 		return not sages.has(c.not_sage)
 	var v: float = state.get(c.key, 0.0)
