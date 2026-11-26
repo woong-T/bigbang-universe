@@ -59,7 +59,7 @@ prototype/index.html   처음 만든 HTML 프로토타입 (수정하지 않음)
 | `events.json` | 돌발 사건 13개. 나오는 시대, 조건, 선택지, 주사위 결과 |
 | `endings.json` | 결말 14개. 판정 조건(위에서부터 검사), 결말 이야기, "미지의 우주" 차이점 문구 |
 | `gauges.json` | 화면에 보이는 게이지 6개와 "우리 우주" 범위 |
-| `seeds.json` | 시작 씨앗 4가지 |
+| `seeds.json` | 시작 씨앗 3가지 |
 | `sages.json` | 학자 카드 24장 |
 | `rules.json` | 시작 값, 값 범위, 사건 확률, 진공 붕괴, 중간 종료 조건 |
 

@@ -16,23 +16,6 @@
     "effects": []
   },
   {
-    "name": "들끓는 씨앗",
-    "desc": "흔들림이 크고 밀도도 예측하기 어려워요.",
-    "effects": [
-      {
-        "op": "add",
-        "key": "F",
-        "value": 10
-      },
-      {
-        "op": "add_random",
-        "key": "D",
-        "min": -8,
-        "max": 8
-      }
-    ]
-  },
-  {
     "name": "묵직한 씨앗",
     "desc": "처음부터 조금 무겁게 출발해요.",
     "effects": [
